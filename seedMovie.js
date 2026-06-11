@@ -10,7 +10,7 @@ const genres = [
 
 // Number of movies per genre to fetch safely (avoiding rate limits)
 const LIMIT_PER_GENRE = 50; 
-const SCRAPER_BASE_URL = 'http://localhost:8000';
+const SCRAPER_BASE_URL = 'https://cut-crew-all.onrender.com';
 const LOCAL_API_URL = 'http://localhost:5000/api/movies/scrape';
 
 // Helper to make HTTP requests
