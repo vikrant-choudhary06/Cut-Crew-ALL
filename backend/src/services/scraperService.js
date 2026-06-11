@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 // Default URL if not provided in .env
-const SCRAPER_BASE_URL = process.env.SCRAPER_URL || 'https://imdbapi-gv4r.onrender.com';
+const SCRAPER_BASE_URL = process.env.SCRAPER_URL || 'https://cut-crew-all.onrender.com/';
 
 const fetchMovieFromScraper = async (title) => {
   try {
