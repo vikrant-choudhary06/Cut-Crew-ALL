@@ -55,61 +55,61 @@ def root():
 def api_usage_guide():
     """Returns documentation and examples on how to use all API endpoints."""
     return {
-        "base_url": "https://cut-crew-all.onrender.com/",
+        "base_url": "https://cut-crew-all.onrender.com",
         "apis": [
             {
                 "name": "Search by String",
                 "endpoint": "/search/{query}",
                 "description": "Search for movies, TV shows, and people by a string query.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//search/inception?limit=10')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/search/inception?limit=10')"
             },
             {
                 "name": "Get Movie Details",
                 "endpoint": "/movie/{movie_id}",
                 "description": "Get full movie/show details by its IMDb ID.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//movie/tt0468569')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/movie/tt0468569')"
             },
             {
                 "name": "Get Movie Info (Fallback Schema)",
                 "endpoint": "/movie_info/{movie_id}",
                 "description": "Alternative endpoint for movie info mapping to the older JSON schema.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//movie_info/tt23037654')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/movie_info/tt23037654')"
             },
             {
                 "name": "Search by Genre",
                 "endpoint": "/search/genre/{genre}",
                 "description": "Search movies by genre with advanced filters.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//search/genre/comedy?limit=50&languages=hi&min_year=2022')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/search/genre/comedy?limit=50&languages=hi&min_year=2022')"
             },
             {
                 "name": "Get Trending Movies",
                 "endpoint": "/trending/movies",
                 "description": "Get currently trending movies.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//trending/movies?count=8')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/trending/movies?count=8')"
             },
             {
                 "name": "Get Trending Trailers",
                 "endpoint": "/trending/trailers",
                 "description": "Get currently trending trailers.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//trending/trailers?limit=20')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/trending/trailers?limit=20')"
             },
             {
                 "name": "Get Season Episodes",
                 "endpoint": "/title/{series_id}/episodes",
                 "description": "Get all episodes for a specific TV show/series.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//title/tt0944947/episodes')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/title/tt0944947/episodes')"
             },
             {
                 "name": "Check Streaming Availability",
                 "endpoint": "/streaming/{title_id}",
                 "description": "Check where a title is streaming.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//streaming/tt0468569')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/streaming/tt0468569')"
             },
             {
                 "name": "Get Videos from Gallery",
                 "endpoint": "/videos/{title_id}",
                 "description": "Get video IDs and metadata from a title's video gallery.",
-                "example_call": "fetch('https://cut-crew-all.onrender.com//videos/tt0468569?limit=10')"
+                "example_call": "fetch('https://cut-crew-all.onrender.com/videos/tt0468569?limit=10')"
             }
         ]
     }
