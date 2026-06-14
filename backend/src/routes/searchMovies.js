@@ -13,7 +13,9 @@ router.get('/', async (req, res, next) => {
 
     // 1. Check MongoDB first
     const dbMovies = await Movie.find({
-      title: { $regex: new RegExp(query, 'i') }
+      title: { $regex: new RegExp(query, 'i') },
+      imdb_id: { $regex: /^tt/ }, // Ensure it's a title (tt), not a name (nm)
+      title_type: { $nin: ['', 'Name', 'Actor', 'Person'] }
     }).limit(20);
 
     if (dbMovies.length > 0) {
@@ -27,7 +29,14 @@ router.get('/', async (req, res, next) => {
 
     // 2. If not found in DB, fallback to Scraper
     console.log(`No results for '${query}' in DB. Searching scraper...`);
-    const scraperResults = await scraperService.searchMovies(query);
+    let scraperResults = [];
+    try {
+      scraperResults = await scraperService.searchMovies(query);
+    } catch (scraperErr) {
+      console.log(`Scraper failed or returned error for '${query}':`, scraperErr.message);
+      // Treat failure as empty results instead of crashing the API
+      scraperResults = [];
+    }
     
     // Check if scraper returned valid array
     if (!scraperResults || !Array.isArray(scraperResults) || scraperResults.length === 0) {
@@ -35,7 +44,7 @@ router.get('/', async (req, res, next) => {
         status: 'success',
         source: 'scraper',
         results: 0,
-        message: 'No movies found for this query even after scraping',
+        message: 'No movies found for this query even after scraping (or scraper failed)',
         data: []
       });
     }
@@ -43,23 +52,36 @@ router.get('/', async (req, res, next) => {
     // 3. Save all results from scraper to DB (Upsert)
     const savedMovies = [];
     for (const item of scraperResults) {
+      // Filter out actors/names
+      const itemImdbId = item.imdb_id || item.id;
+      const itemTitleType = item.title_type || (item.type === 'Title' ? 'Movie' : '');
+      if ((itemImdbId && itemImdbId.startsWith('nm')) || ['Name', 'Actor', 'Person'].includes(itemTitleType)) {
+        continue;
+      }
+
       // Scraper might return partial data on search, but we save what we can.
       // We map it to our schema structure.
       const movieData = {
-        imdb_id: item.imdb_id || item.id, // Depending on the exact scraper API response keys
-        title: item.title || "",
-        original_title: item.original_title || "",
-        title_type: item.title_type || "",
-        release_year: item.release_year || null,
+        imdb_id: itemImdbId,
+        title: item.title || item.name || "",
+        original_title: item.original_title || item.name || "",
+        title_type: item.title_type || (item.type === 'Title' ? 'Movie' : ''),
+        release_year: item.release_year || item.year || null,
         release_date: item.release_date || "",
         runtime_minutes: item.runtime_minutes || null,
         rating: item.rating || null,
         vote_count: item.vote_count || null,
         metascore: item.metascore || null,
         genres: item.genres || [],
-        plot: item.plot || "",
-        poster_url: item.poster_url || "",
+        country: item.country || item.countries || [],
+        plot: item.plot || item.description || "",
+        poster_url: item.poster_url || item.image || "",
         streaming_url: "",
+        cast: (item.enhanced_actors || []).map(actor => ({
+          name: actor.name,
+          profile_image: actor.profile_image,
+          character: actor.characters ? actor.characters[0] : ""
+        })).slice(0, 10), // Limit to top 10 cast members
       };
 
       // Only insert if imdb_id exists
@@ -67,7 +89,7 @@ router.get('/', async (req, res, next) => {
         const savedDoc = await Movie.findOneAndUpdate(
           { imdb_id: movieData.imdb_id },
           movieData,
-          { new: true, upsert: true }
+          { returnDocument: 'after', upsert: true }
         );
         savedMovies.push(savedDoc);
       }

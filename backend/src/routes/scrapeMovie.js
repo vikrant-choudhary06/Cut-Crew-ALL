@@ -36,13 +36,23 @@ router.post('/', async (req, res, next) => {
       vote_count: scraperData.vote_count || null,
       metascore: scraperData.metascore || null,
       genres: scraperData.genres || [],
+      country: scraperData.country || scraperData.countries || [],
       plot: scraperData.plot || "",
       poster_url: scraperData.poster_url || "",
       streaming_url: "",
+      cast: (scraperData.enhanced_actors || []).map(actor => ({
+        name: actor.name,
+        profile_image: actor.profile_image,
+        character: actor.characters ? actor.characters[0] : ""
+      })).slice(0, 10), // Limit to top 10 cast members
     };
 
     // 4. Save
-    const savedMovie = await Movie.create(movieData);
+    const savedMovie = await Movie.findOneAndUpdate(
+      { imdb_id: movieData.imdb_id },
+      movieData,
+      { returnDocument: 'after', upsert: true }
+    );
 
     return res.status(201).json({ status: 'success', source: 'scraper', data: savedMovie });
 

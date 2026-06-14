@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../css/navbar.css';
 
 const Navbar = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const isActive = (path) => location.pathname === path ? "bg-gray-800 text-purple-400" : "text-white hover:bg-gray-800 hover:text-purple-400";
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full bg-black text-white font-sans">
       {/* Sidebar (Left Navbar) */}
@@ -14,9 +28,9 @@ const Navbar = ({ children }) => {
           
           {/* Navigation Links */}
           <nav className="p-4 space-y-2 mt-4 flex flex-col">
-            <a href="#" className="px-6 py-3 text-lg font-medium hover:bg-gray-800 hover:text-purple-400 rounded-lg transition-colors">HOME</a>
-            <a href="#" className="px-6 py-3 text-lg font-medium hover:bg-gray-800 hover:text-purple-400 rounded-lg transition-colors">GENRE</a>
-            <a href="#" className="px-6 py-3 text-lg font-medium hover:bg-gray-800 hover:text-purple-400 rounded-lg transition-colors">WATCHLIST</a>
+            <Link to="/" className={`px-6 py-3 text-lg font-medium rounded-lg transition-colors ${isActive('/')}`}>HOME</Link>
+            <Link to="/genres" className={`px-6 py-3 text-lg font-medium rounded-lg transition-colors ${isActive('/genres')}`}>GENRE</Link>
+            <Link to="/watchlist" className={`px-6 py-3 text-lg font-medium rounded-lg transition-colors ${isActive('/watchlist')}`}>WATCHLIST</Link>
           </nav>
         </div>
 
@@ -32,14 +46,16 @@ const Navbar = ({ children }) => {
         <header className="h-16 border-b border-gray-800 flex items-center justify-end px-8 shrink-0">
           <div className="flex items-center gap-6">
             {/* Search Bar */}
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <input 
                 type="text" 
-                placeholder="Search..." 
+                placeholder="Search movies, series..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-gray-900 border border-gray-700 text-white text-sm rounded-full focus:ring-purple-500 focus:border-purple-500 block w-64 px-4 py-2 outline-none transition-all"
               />
-            </div>
-            {/* Sign In button (Interpreted from 'SING') */}
+            </form>
+            {/* Sign In button */}
             <button className="text-sm font-bold bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-full transition-colors uppercase tracking-wider">
               Sign In
             </button>

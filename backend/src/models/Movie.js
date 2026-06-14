@@ -38,6 +38,9 @@ const movieSchema = new mongoose.Schema({
   genres: [{
     type: String,
   }],
+  country: [{
+    type: String,
+  }],
   plot: {
     type: String,
   },
@@ -47,7 +50,12 @@ const movieSchema = new mongoose.Schema({
   streaming_url: {
     type: String,
     default: "", // As requested, empty for now
-  }
+  },
+  cast: [{
+    name: String,
+    profile_image: String,
+    character: String
+  }]
 }, {
   timestamps: true // Adds createdAt and updatedAt automatically
 });

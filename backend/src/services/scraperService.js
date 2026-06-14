@@ -33,10 +33,24 @@ const searchMovies = async (query, limit = 10) => {
     const response = await axios.get(`${SCRAPER_BASE_URL}/search/${encodeURIComponent(query)}`, {
       params: { limit }
     });
-    return response.data; // Should return an array of movies based on the API docs
+    // The Python API returns { query: "...", results: [...] }
+    return response.data.results || [];
   } catch (error) {
     console.error(`Error searching movies from scraper: ${error.message}`);
     throw new Error('Failed to search movies from scraper');
+  }
+};
+
+const searchByGenre = async (genre, limit = 10) => {
+  try {
+    const response = await axios.get(`${SCRAPER_BASE_URL}/search/genre/${encodeURIComponent(genre)}`, {
+      params: { limit }
+    });
+    // The Python API returns an array containing an array of movies: [ [movies...] ]
+    return response.data[0] || [];
+  } catch (error) {
+    console.error(`Error searching genre from scraper: ${error.message}`);
+    throw new Error('Failed to search genre from scraper');
   }
 };
 
@@ -44,4 +58,5 @@ module.exports = {
   fetchMovieFromScraper,
   fetchMovieDetails,
   searchMovies,
+  searchByGenre,
 };

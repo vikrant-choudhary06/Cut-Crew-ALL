@@ -66,12 +66,12 @@ const Hero = () => {
         
         {/* Dynamic background image based on movie poster */}
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay transition-all duration-700" 
+          className="absolute inset-0 bg-cover bg-center opacity-60 transition-all duration-700" 
           style={bgStyle}
         ></div>
         
         {/* Gradient Overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-transparent md:to-black/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent md:to-black/20"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between w-full h-full gap-8">
           {/* Left Side: Text and Content */}
