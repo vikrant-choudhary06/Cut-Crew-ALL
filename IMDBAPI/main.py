@@ -22,7 +22,25 @@ app = FastAPI(
 
 import sys
 import os
+import threading
+import time
+import requests
 from contextlib import contextmanager
+
+def keep_awake():
+    self_url = os.environ.get("RENDER_EXTERNAL_URL")
+    if not self_url:
+        return
+    while True:
+        time.sleep(14 * 60) # 14 minutes
+        try:
+            requests.get(self_url)
+            print(f"[Keep-Awake] Pinged {self_url} successfully")
+        except Exception as e:
+            print(f"[Keep-Awake] Error pinging {self_url}: {e}")
+
+# Start the keep-awake thread
+threading.Thread(target=keep_awake, daemon=True).start()
 
 @contextmanager
 def suppress_stdout():
