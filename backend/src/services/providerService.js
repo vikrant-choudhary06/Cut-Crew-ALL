@@ -19,25 +19,26 @@ let cachedProviders = [];
 let lastFetchTime = 0;
 
 async function getAvailableProviders() {
+  const allowedProviders = ['vega', '4khdhub', 'hdhub4u', 'dooflix', 'luxMovies'];
   const now = Date.now();
   // Cache for 10 minutes
   if (cachedProviders.length > 0 && (now - lastFetchTime) < 10 * 60 * 1000) {
-    return cachedProviders;
+    return cachedProviders.filter(p => allowedProviders.includes(p));
   }
   try {
     const response = await axios.get(process.env.PROVIDER_URL + '/providers', { timeout: 5000 });
     if (response.data && Array.isArray(response.data) && response.data.length > 0) {
       cachedProviders = response.data;
       lastFetchTime = now;
-      return cachedProviders;
+      return cachedProviders.filter(p => allowedProviders.includes(p));
     }
   } catch (error) {
     console.error('[ProviderService Error] Failed to fetch providers list dynamically:', error.message);
   }
   
   // Fallback if the API fails
-  if (cachedProviders.length > 0) return cachedProviders;
-  return ['vega', 'dooflix', 'hdhub4u', 'luxMovies'];
+  if (cachedProviders.length > 0) return cachedProviders.filter(p => allowedProviders.includes(p));
+  return allowedProviders;
 }
 
 /**
