@@ -35,6 +35,17 @@ connectDB();
 // Initialize Cron Jobs
 startCronJobs();
 
+// Keep-Awake Ping for Render Free Tier (prevents sleeping and cold-start CORS errors)
+const selfUrl = process.env.RENDER_EXTERNAL_URL; // Render automatically sets this
+if (selfUrl) {
+  const axios = require('axios');
+  setInterval(() => {
+    axios.post(`${selfUrl}/api/admin/heartbeat`)
+      .then(res => console.log(`[Keep-Awake] Pinged self successfully: ${res.status}`))
+      .catch(err => console.error(`[Keep-Awake] Failed to ping self:`, err.message));
+  }, 14 * 60 * 1000); // 14 minutes
+}
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
