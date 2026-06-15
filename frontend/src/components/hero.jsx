@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import '../css/hero.css';
 
 const Hero = () => {
@@ -101,12 +102,12 @@ const Hero = () => {
             </p>
             
             <div className="flex gap-4">
-              <button className="bg-white text-black font-bold px-8 py-3 rounded-full hover:bg-gray-200 transition-all transform hover:scale-105 shadow-lg">
+              <Link to={`/movie/${currentMovie.imdb_id}`} className="bg-white text-black font-bold px-8 py-3 rounded-full hover:bg-gray-200 transition-all transform hover:scale-105 shadow-lg inline-block text-center">
                 Watch Now
-              </button>
-              <button className="bg-gray-800/80 backdrop-blur-md text-white font-bold px-8 py-3 rounded-full border border-gray-600 hover:bg-gray-700 transition-all shadow-lg">
+              </Link>
+              <Link to={`/movie/${currentMovie.imdb_id}`} className="bg-gray-800/80 backdrop-blur-md text-white font-bold px-8 py-3 rounded-full border border-gray-600 hover:bg-gray-700 transition-all shadow-lg inline-block text-center">
                 More Info
-              </button>
+              </Link>
             </div>
           </div>
 
