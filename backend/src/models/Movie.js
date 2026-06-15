@@ -1,5 +1,18 @@
 const mongoose = require('mongoose');
 
+const episodeSchema = new mongoose.Schema({
+  episode_number: Number,
+  title: String,
+  link: String, // The direct or intermediate link from the provider
+  stream_data: { type: mongoose.Schema.Types.Mixed },
+  stream_fetched_at: { type: Date },
+});
+
+const seasonSchema = new mongoose.Schema({
+  season_number: Number,
+  episodes: [episodeSchema],
+});
+
 const movieSchema = new mongoose.Schema({
   imdb_id: {
     type: String,
@@ -51,6 +64,29 @@ const movieSchema = new mongoose.Schema({
     type: String,
     default: "", // As requested, empty for now
   },
+  defaultStreamLink: {
+    type: String,
+    default: "",
+  },
+  provider_name: {
+    type: String,
+    default: "",
+  },
+  stream_data: {
+    type: mongoose.Schema.Types.Mixed,
+  },
+  stream_fetched_at: {
+    type: Date,
+  },
+  local_poster_path: {
+    type: String,
+    default: "",
+  },
+  local_backdrop_path: {
+    type: String,
+    default: "",
+  },
+  seasons: [seasonSchema],
   cast: [{
     name: String,
     profile_image: String,

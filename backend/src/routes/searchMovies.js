@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Movie } = require('../models');
 const scraperService = require('../services/scraperService');
+const providerService = require('../services/providerService');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -86,9 +87,12 @@ router.get('/', async (req, res, next) => {
 
       // Only insert if imdb_id exists
       if (movieData.imdb_id) {
+        // Fetch Provider Links before saving
+        const enrichedMovieData = await providerService.fetchAndAttachProviderLinks(movieData);
+
         const savedDoc = await Movie.findOneAndUpdate(
-          { imdb_id: movieData.imdb_id },
-          movieData,
+          { imdb_id: enrichedMovieData.imdb_id },
+          enrichedMovieData,
           { returnDocument: 'after', upsert: true }
         );
         savedMovies.push(savedDoc);

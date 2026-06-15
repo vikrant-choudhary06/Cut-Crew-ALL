@@ -1,5 +1,6 @@
 const app = require('./src/app');
 const connectDB = require('./src/config/db');
+const startCronJobs = require('./src/cron/cronJobs');
 const fs = require('fs');
 const path = require('path');
 
@@ -30,6 +31,9 @@ const PORT = process.env.PORT || 5000;
 
 // Connect to Database
 connectDB();
+
+// Initialize Cron Jobs
+startCronJobs();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

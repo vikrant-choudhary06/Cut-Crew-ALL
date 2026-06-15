@@ -7,11 +7,87 @@ const MovieDetail = () => {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Streaming state
+  const [isStreamLoading, setIsStreamLoading] = useState(false);
+  const [streamUrl, setStreamUrl] = useState('');
+  const [streamError, setStreamError] = useState('');
+
+  // Series state
+  const [selectedSeason, setSelectedSeason] = useState(null);
+  const [currentPlayingEpisode, setCurrentPlayingEpisode] = useState(null);
+
+  const isSeries = movie && (movie.title_type || '').toLowerCase().match(/tv|series|episode/);
+  const seasons = movie?.seasons || [];
+  
+  useEffect(() => {
+    if (isSeries && seasons.length > 0 && selectedSeason === null) {
+      setSelectedSeason(seasons[0].season_number);
+    }
+  }, [isSeries, seasons, selectedSeason]);
+
+  const activeSeasonData = seasons.find(s => s.season_number === selectedSeason);
+
+  const handlePlayClick = async (seasonNum = null, episodeNum = null) => {
+    try {
+      setStreamError('');
+      setStreamUrl('');
+      setIsStreamLoading(true);
+      
+      if (seasonNum && episodeNum) {
+        setCurrentPlayingEpisode({ season: seasonNum, episode: episodeNum });
+      }
+
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      let url = `${backendUrl}/api/movies/play/${id}`;
+      
+      if (isSeries && seasonNum && episodeNum) {
+        url += `?season=${seasonNum}&episode=${episodeNum}`;
+      }
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (response.ok && Array.isArray(data) && data.length > 0) {
+        // Assume provider returns array of objects with a link property, or strings
+        const playableLink = data[0].link || data[0].url || data[0]; 
+        setStreamUrl(playableLink);
+        
+        // Scroll to player smoothly
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setStreamError(data.error || 'Stream temporarily unavailable');
+      }
+    } catch (err) {
+      console.error("Error fetching stream:", err);
+      setStreamError('Stream temporarily unavailable');
+    } finally {
+      setIsStreamLoading(false);
+    }
+  };
+
+  const handleNextEpisode = () => {
+    if (!currentPlayingEpisode || !activeSeasonData) return;
+    const nextEpNum = currentPlayingEpisode.episode + 1;
+    const nextEp = activeSeasonData.episodes.find(e => e.episode_number === nextEpNum);
+    if (nextEp) {
+      handlePlayClick(currentPlayingEpisode.season, nextEpNum);
+    }
+  };
+
+  const handlePrevEpisode = () => {
+    if (!currentPlayingEpisode || !activeSeasonData) return;
+    const prevEpNum = currentPlayingEpisode.episode - 1;
+    const prevEp = activeSeasonData.episodes.find(e => e.episode_number === prevEpNum);
+    if (prevEp) {
+      handlePlayClick(currentPlayingEpisode.season, prevEpNum);
+    }
+  };
 
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
         const response = await fetch(`${backendUrl}/api/movies/${id}`);
         const data = await response.json();
 
@@ -84,6 +160,58 @@ const MovieDetail = () => {
         >
           <span className="transform group-hover:-translate-x-1 transition-transform">←</span> Back
         </button>
+
+        {/* Video Player Section */}
+        {(streamUrl || isStreamLoading) && (
+          <div className="w-full mb-10 bg-black rounded-2xl overflow-hidden shadow-2xl border border-gray-800 relative aspect-video flex flex-col items-center justify-center">
+            {isStreamLoading ? (
+              <div className="flex flex-col items-center gap-4 flex-grow justify-center py-20">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-blue-400 font-semibold animate-pulse">Loading Stream...</p>
+              </div>
+            ) : (
+              <>
+                <video 
+                  src={streamUrl} 
+                  controls 
+                  autoPlay 
+                  className="w-full h-full object-contain bg-black"
+                >
+                  Your browser does not support HTML5 video.
+                </video>
+                
+                {/* Player Controls for Series */}
+                {isSeries && currentPlayingEpisode && activeSeasonData && (
+                  <div className="absolute bottom-16 left-0 right-0 px-8 flex justify-between pointer-events-none">
+                    <button 
+                      onClick={handlePrevEpisode}
+                      disabled={!activeSeasonData.episodes.find(e => e.episode_number === currentPlayingEpisode.episode - 1)}
+                      className="pointer-events-auto bg-black/60 hover:bg-blue-600 text-white px-4 py-2 rounded-lg backdrop-blur disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ← Prev Ep
+                    </button>
+                    <button 
+                      onClick={handleNextEpisode}
+                      disabled={!activeSeasonData.episodes.find(e => e.episode_number === currentPlayingEpisode.episode + 1)}
+                      className="pointer-events-auto bg-black/60 hover:bg-blue-600 text-white px-4 py-2 rounded-lg backdrop-blur disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Next Ep →
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+            
+            {!isStreamLoading && (
+              <button 
+                onClick={() => setStreamUrl('')}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition-colors backdrop-blur-md z-10"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-col md:flex-row gap-10 lg:gap-16">
           {/* Poster Column */}
@@ -160,7 +288,7 @@ const MovieDetail = () => {
             <div className="mb-10 max-w-3xl">
               <h3 className="text-xl font-bold text-gray-200 mb-3">Plot</h3>
               <p className="text-gray-400 leading-relaxed text-lg">
-                {movie.plot || 'No plot available for this movie.'}
+                {movie.plot || 'No plot available for this.'}
               </p>
             </div>
 
@@ -173,13 +301,92 @@ const MovieDetail = () => {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-4 mt-auto">
-              <button className="bg-white text-black font-bold py-3 px-8 rounded-full hover:bg-gray-200 hover:scale-105 transition-all shadow-lg shadow-white/10 flex items-center gap-2">
-                ▶ Watch Now
-              </button>
-              <button className="bg-gray-800 text-white font-bold py-3 px-8 rounded-full hover:bg-gray-700 transition-colors border border-gray-700 flex items-center gap-2">
-                + Add to Watchlist
-              </button>
+            {/* --- TV Series: Seasons and Episodes Section --- */}
+            {isSeries && seasons && seasons.length > 0 && (
+              <div className="mb-10 w-full max-w-3xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-2xl font-bold text-white">Episodes</h3>
+                  <select 
+                    value={selectedSeason || ''} 
+                    onChange={(e) => setSelectedSeason(Number(e.target.value))}
+                    className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 font-medium"
+                  >
+                    {seasons.map(s => (
+                      <option key={s.season_number} value={s.season_number}>
+                        Season {s.season_number}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
+                  <div className="max-h-96 overflow-y-auto no-scrollbar">
+                    {activeSeasonData?.episodes?.map((ep) => {
+                      const isPlaying = currentPlayingEpisode?.season === activeSeasonData.season_number && 
+                                        currentPlayingEpisode?.episode === ep.episode_number;
+                      return (
+                        <div 
+                          key={ep.episode_number}
+                          onClick={() => handlePlayClick(activeSeasonData.season_number, ep.episode_number)}
+                          className={`flex items-center gap-4 p-4 border-b border-gray-800 hover:bg-gray-800/80 cursor-pointer transition-colors ${isPlaying ? 'bg-blue-900/20 border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}
+                        >
+                          <div className="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center font-bold text-gray-400 shrink-0">
+                            E{ep.episode_number}
+                          </div>
+                          <div className="flex-grow">
+                            <h4 className={`font-semibold ${isPlaying ? 'text-blue-400' : 'text-gray-200'}`}>
+                              {ep.title}
+                            </h4>
+                          </div>
+                          <div className="shrink-0 text-blue-500">
+                            {isPlaying ? (
+                              <span className="flex items-center gap-2 text-sm font-bold">
+                                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                                Playing
+                              </span>
+                            ) : (
+                              <button className="opacity-0 group-hover:opacity-100 p-2 hover:bg-blue-600/20 rounded-full transition-all">
+                                ▶
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {isSeries && (!seasons || seasons.length === 0) && (
+              <div className="mb-10 p-4 bg-gray-900 border border-gray-800 rounded-xl text-gray-400">
+                No episodes found for this series.
+              </div>
+            )}
+
+            {/* --- Action Buttons --- */}
+            <div className="flex flex-col gap-4 mt-auto">
+              <div className="flex flex-wrap gap-4">
+                {!isSeries && (
+                  <button 
+                    onClick={() => handlePlayClick()}
+                    disabled={isStreamLoading}
+                    className="bg-blue-600 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-500 hover:scale-105 transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isStreamLoading ? 'Loading Movie...' : '▶ Play Movie'}
+                  </button>
+                )}
+                
+                <button className="bg-gray-800 text-white font-bold py-3 px-8 rounded-full hover:bg-gray-700 transition-colors border border-gray-700 flex items-center gap-2">
+                  + Add to Watchlist
+                </button>
+              </div>
+              
+              {streamError && (
+                <div className="text-red-500 bg-red-900/20 border border-red-900 p-3 rounded-lg text-sm max-w-md">
+                  {streamError}
+                </div>
+              )}
             </div>
           </div>
         </div>

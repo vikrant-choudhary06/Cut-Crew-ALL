@@ -9,7 +9,7 @@ import MovieDetail from './pages/MovieDetail';
 function App() {
   // Global heartbeat to track online users
   useEffect(() => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const ping = () => fetch(`${backendUrl}/api/admin/heartbeat`, { method: 'POST' }).catch(() => {});
     ping(); // initial ping
     const interval = setInterval(ping, 15000); // ping every 15s

@@ -8,6 +8,7 @@ router.use('/movies/search', require('./searchMovies'));
 router.use('/movies/scrape', require('./scrapeMovie'));
 router.use('/admin', require('./admin'));
 router.use('/logs', require('./logs'));
+router.use('/movies/play', require('./playMovie')); // Added before general /movies endpoints
 router.use('/movies', require('./getAllMovies'));
 router.use('/movies', require('./getMovieById')); // This will match GET /movies/:imdb_id
 

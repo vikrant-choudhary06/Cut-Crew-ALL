@@ -8,7 +8,7 @@ const TopMovie = () => {
   useEffect(() => {
     const fetchTopMovies = async () => {
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
         const response = await fetch(`${backendUrl}/api/movies/trending`);
         const data = await response.json();
         

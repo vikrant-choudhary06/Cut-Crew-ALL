@@ -8,7 +8,7 @@ const IndianMovies = () => {
   useEffect(() => {
     const fetchIndianMovies = async () => {
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
         // Using the search endpoint to find Indian movies
         const response = await fetch(`${backendUrl}/api/movies?country=India`);
         const data = await response.json();

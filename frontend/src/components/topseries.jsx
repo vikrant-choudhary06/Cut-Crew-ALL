@@ -8,7 +8,7 @@ const TopSeries = () => {
   useEffect(() => {
     const fetchTopSeries = async () => {
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
         const response = await fetch(`${backendUrl}/api/series/trending`);
         const data = await response.json();
         

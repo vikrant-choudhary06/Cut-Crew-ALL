@@ -22,7 +22,7 @@ const SearchPage = () => {
       setItems([]); // Clear previous results while loading
 
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
         // This endpoint has fallback scraping logic built-in!
         const response = await fetch(`${backendUrl}/api/movies/search?query=${encodeURIComponent(query)}`);
         const data = await response.json();

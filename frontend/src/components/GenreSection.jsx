@@ -8,7 +8,7 @@ const GenreSection = ({ title, genreQuery, badgeColor, badgeText }) => {
   useEffect(() => {
     const fetchGenreItems = async () => {
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
         const response = await fetch(`${backendUrl}/api/movies?genre=${encodeURIComponent(genreQuery)}&limit=10`);
         const data = await response.json();
         

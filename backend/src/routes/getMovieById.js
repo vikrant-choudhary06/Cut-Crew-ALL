@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Movie } = require('../models');
 const scraperService = require('../services/scraperService');
+const providerService = require('../services/providerService');
 
 // Define route directly on '/' since we mount it on '/:imdb_id' in index.js
 // Wait, if it's mounted on '/:imdb_id', the param is defined in the parent router. 
@@ -53,9 +54,13 @@ router.get('/:imdb_id', async (req, res, next) => {
         character: actor.characters ? actor.characters[0] : ""
       })).slice(0, 10), // Limit to top 10 cast members
     };
+    
+    // Fetch Provider Links before saving
+    const enrichedMovieData = await providerService.fetchAndAttachProviderLinks(movieData);
+
     const savedMovie = await Movie.findOneAndUpdate(
-      { imdb_id: movieData.imdb_id },
-      movieData,
+      { imdb_id: enrichedMovieData.imdb_id },
+      enrichedMovieData,
       { returnDocument: 'after', upsert: true }
     );
     return res.status(200).json({
